@@ -1,0 +1,11 @@
+name: Employment_Muskegon
+title:
+account: tomhopper
+server: shinyapps.io
+appId: 90064
+bundleId: 718847
+url: https://tomhopper.shinyapps.io/Employment_Muskegon/
+when: 1487684952.95994
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: data-raw/.DS_Store|data-raw/SeriesReport-20170220100534_f21a6f.xlsx
