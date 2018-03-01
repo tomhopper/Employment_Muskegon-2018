@@ -2,4 +2,6 @@
 
 Analysis of BLS unemployment data for Muskegon.
 
+Uses time series analysis to estimate seasonally-adjusted unemployment rate from non-adjusted data.
+
 Data from BLS series LAUMT263474000000003.

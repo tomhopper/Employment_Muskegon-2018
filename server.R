@@ -22,12 +22,26 @@ library(ggvis)
 # unem_df <- read_html("http://data.bls.gov/timeseries/LAUMT263474000000003?data_tool=XGtable") %>%
 #   html_node(".regular-data") %>%
 #   html_table(trim = TRUE)
-unem_df <- bls_api(seriesid = "LAUMT263474000000003", startyear = 1980, endyear = 2000, registrationKey = Sys.getenv("BLS_KEY")) %>% 
-  bind_rows(bls_api(seriesid = "LAUMT263474000000003", startyear = 2000, endyear = 2018, registrationKey = Sys.getenv("BLS_KEY"))) %>% 
+unem1_df <- bls_api(seriesid = "LAUMT263474000000003", startyear = 1980, endyear = 2000, registrationKey = Sys.getenv("BLS_KEY")) %>% 
+  tidyr::unnest()
+
+unem2_df <- bls_api(seriesid = "LAUMT263474000000003", startyear = 2000, endyear = 2018, registrationKey = Sys.getenv("BLS_KEY")) %>% 
+  filter(row_number() != 1) %>% # first row (M12, 2017) is corrupted by extra "latest == TRUE" column
+  tidyr::unnest()  %>% 
+  select(-seriesID) %>% # column names have been mixed up due to "latest == TRUE" column in latest record.
+  rename('seriesID' = "footnotes",
+         'footnotes' = "value",
+         'value' = "latest") %>% 
+  mutate(value = as.numeric(value)) # due to "latest == TRUE" data corruption
+
+unem_df <- unem1_df %>% 
+  bind_rows(unem2_df) %>% 
   dateCast() %>% 
   unnest() %>% 
   arrange(date) %>% 
   mutate(value = value / 100)
+
+rm(unem2_df, unem1_df)
 
 # Read in the downloaded data
 # TODO: download the data directly from the website
@@ -62,10 +76,10 @@ rate_decomp <- decompose(rate_ts)
 
 # Save time series decomposition to a data frame and make tidy
 ts_df <- data_frame(date = unem_df$date, 
-                    observed = rate_decomp$x,
-                    adjusted = rate_decomp$trend,
-                    seasonal = rate_decomp$seasonal,
-                    random = rate_decomp$random,
+                    observed = as.numeric(rate_decomp$x),
+                    adjusted = as.numeric(rate_decomp$trend),
+                    seasonal = as.numeric(rate_decomp$seasonal),
+                    random = as.numeric(rate_decomp$random),
                     date_dec = decimal_date(date)) %>% 
   gather(component, rate, -date, -date_dec)
 
