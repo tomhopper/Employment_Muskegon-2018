@@ -26,7 +26,8 @@ fluidPage(theme = shinytheme("cerulean"),
                             choices = c("observed","adjusted","seasonal","random"),
                             selected = "observed",
                             label = "Component to graph:"
-                )
+                ),
+                htmlOutput(outputId = "date_range_input")
               ),
               
               # Show a plot of the generated distribution
