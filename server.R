@@ -124,23 +124,34 @@ shinyServer(function(input, output) {
     
   })
   
+  output$date_range_input <- renderUI({
+    dateRangeInput(inputId = "date_range",
+                   label = "Select dates to display",
+                   start = max(min(ts_newdata_df$date), max(ts_newdata_df$date) - years(10)),
+                   end = max(ts_newdata_df$date),
+                   min = min(ts_newdata_df$date),
+                   max = max(ts_newdata_df$date),
+                   startview = "year",
+                   format = "yyyy-mm")
+  })
+  
   output$em_plot_ui <- renderUI({
     ggvisOutput("em_plot")
   })
   
-  # output$daterange <- renderUI({
-  #     dateRangeInput(inputId = "daterange",
-  #                    label = "Select data range",
-  #                    start = min(ts_newdata_df$date),
-  #                    end = max(ts_newdata_df$date),
-  #                    min = min(ts_newdata_df$date),
-  #                    max = max(ts_newdata_df$date)
-  #     )
-  # })
-
   plot_data <- reactive({
+    user_date_range <- input$date_range
+    if(is.null(user_date_range)) {
+      user_date_range <- c(max(ts_newdata_df$date))
+      user_date_range <- c(user_date_range - years(10), user_date_range)
+    }
+    start_date <- user_date_range[1]
+    end_date <- user_date_range[2]
+    
+    user_component <- input$component
     my_df <- ts_newdata_df %>% 
-      filter(component == input$component) %>% 
+      filter(component == user_component) %>% 
+      filter(date >= start_date & date <= end_date) %>% 
       na.omit()
   })
   values_tt <- reactive({
